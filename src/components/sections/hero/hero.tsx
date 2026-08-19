@@ -7,6 +7,7 @@ import About from "@/components/sections/about";
 import ScreenOverlay from "@/components/ui/screen-overlay";
 import { useDollyProgress } from "@/hooks/use-dolly-progress";
 import { useIs3DCapable } from "@/hooks/use-is-3d-capable";
+import MobilePhoneScene from "@/components/three/mobile-phone-scene";
 
 const SceneCanvas = dynamic(() => import("@/components/three/scenecanvas"), {
   ssr: false,
@@ -34,7 +35,9 @@ export default function Hero() {
       <div className="sticky top-0 min-h-[100dvh] lg:h-screen w-full overflow-visible lg:overflow-hidden">
         {/* 3D Scene Background & Workstation Canvas */}
         <HeroBackground progress={progress} />
-
+        <div className="absolute inset-x-0 top-1/3 z-10 h-[300px] w-full">
+          <MobilePhoneScene />
+        </div>
         {is3DCapable && (
           <div className="absolute inset-0 z-0 pointer-events-none lg:pointer-events-auto hidden lg:block">
             <SceneCanvas progress={progress} />
