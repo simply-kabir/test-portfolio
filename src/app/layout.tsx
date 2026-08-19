@@ -1,6 +1,7 @@
 import { Inter, Instrument_Serif } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/layout/navbar";
+import Providers from "@/providers/providers";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -23,7 +24,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.variable} ${instrumentSerif.variable} antialiased`}>
         <Navbar />
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
