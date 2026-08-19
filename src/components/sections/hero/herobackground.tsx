@@ -25,7 +25,7 @@ export default function HeroBackground({ progress = 0 }: { progress?: number }) 
   const atmosphereOpacity = Math.max(0, 1 - progress / 0.85);
 
   useEffect(() => {
-    if (isMobile) return; // skip the entire particle/aurora canvas system on mobile
+    if (isMobile === null || isMobile === true) return; // wait for detection, then skip on mobile
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
