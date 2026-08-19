@@ -1,28 +1,11 @@
 "use client";
 
-import { useEffect } from "react";
 import { Canvas } from "@react-three/fiber";
 import { useGLTF } from "@react-three/drei";
 import { Suspense } from "react";
-import { MeshStandardMaterial, Color } from "three";
 
 function PhoneModel() {
   const { scene } = useGLTF("/models/phone-test.glb");
-
-  useEffect(() => {
-    scene.traverse((child) => {
-      if (
-        "material" in child &&
-        child.material instanceof MeshStandardMaterial &&
-        child.material.name === "PhoneCase_Mat"
-      ) {
-        child.material.color = new Color("#221e28"); // matches your keyboard/mouse dark tone
-        child.material.roughness = 0.35;
-        child.material.metalness = 0.4;
-      }
-    });
-  }, [scene]);
-
   return <primitive object={scene} scale={1.4} position={[0, -0.2, 0]} />;
 }
 
