@@ -15,27 +15,37 @@ interface DustParticle {
   speed: number;
 }
 
+import { useIsMobile } from "@/hooks/use-is-mobile";
 export default function HeroBackground({ progress = 0 }: { progress?: number }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const mouseRef = useRef({ x: -1000, y: -1000, targetX: -1000, targetY: -1000 });
+  const isMobile = useIsMobile();
 
   // Gradually fade out atmospheric background as camera dollies into monitor (invisible by progress 0.85)
   const atmosphereOpacity = Math.max(0, 1 - progress / 0.85);
 
   useEffect(() => {
+    if (isMobile) return; // skip the entire particle/aurora canvas system on mobile
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
     let animId: number;
-    let width = (canvas.width = window.innerWidth);
-    let height = (canvas.height = window.innerHeight);
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    let width = window.innerWidth;
+    let height = window.innerHeight;
+    canvas.width = width * dpr;
+    canvas.height = height * dpr;
+    ctx.scale(dpr, dpr);
 
     const handleResize = () => {
       if (!canvas) return;
-      width = canvas.width = window.innerWidth;
-      height = canvas.height = window.innerHeight;
+      width = window.innerWidth;
+      height = window.innerHeight;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.scale(dpr, dpr);
     };
     window.addEventListener("resize", handleResize);
 
@@ -210,7 +220,7 @@ export default function HeroBackground({ progress = 0 }: { progress?: number }) 
       window.removeEventListener("mousemove", handleMouseMove);
       document.removeEventListener("mouseleave", handleMouseLeave);
     };
-  }, []);
+  }, [isMobile]);
 
   return (
     <div
