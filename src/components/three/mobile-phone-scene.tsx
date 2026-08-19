@@ -5,7 +5,7 @@ import { useGLTF } from "@react-three/drei";
 import { Suspense } from "react";
 
 function PhoneModel() {
-  const { scene } = useGLTF("/models/phone-test.glb");
+  const { scene } = useGLTF("/models/phone-test_V2.glb");
   return <primitive object={scene} scale={1.4} position={[0, -0.2, 0]} />;
 }
 
