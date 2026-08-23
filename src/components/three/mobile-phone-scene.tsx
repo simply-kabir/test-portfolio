@@ -18,7 +18,7 @@ function PhoneModel() {
 
       for (const mat of materials) {
         if (mat instanceof MeshStandardMaterial && mat.name === "PhoneCase_Mat") {
-          mat.color = new Color("#221e28");
+          mat.color = new Color("#3a3345");
           mat.metalness = 0.4;
           // roughness intentionally left at its original exported value —
           // changing it was confirmed to crash mobile Safari on this model
@@ -27,7 +27,7 @@ function PhoneModel() {
     });
   }, [scene]);
 
-  return <primitive object={scene} scale={1.4} position={[0, -0.2, 0]} />;
+  return <primitive object={scene} scale={2.6} position={[0, -0.2, 0]} />;
 }
 
 export default function MobilePhoneScene() {
