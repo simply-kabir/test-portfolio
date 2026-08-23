@@ -9,21 +9,23 @@ import { MeshStandardMaterial, Color, type Mesh } from "three";
 function PhoneModel() {
   const { scene } = useGLTF("/models/phone-test.glb");
 
-useEffect(() => {
-  scene.traverse((child) => {
-    const mesh = child as Mesh;
-    if (!mesh.isMesh || !mesh.material) return;
+  useEffect(() => {
+    scene.traverse((child) => {
+      const mesh = child as Mesh;
+      if (!mesh.isMesh || !mesh.material) return;
 
-    const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+      const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
 
-    for (const mat of materials) {
-      if (mat instanceof MeshStandardMaterial && mat.name === "PhoneCase_Mat") {
-        mat.color = new Color("#221e28");
-        mat.metalness = 0.4; // testing this alone this time
+      for (const mat of materials) {
+        if (mat instanceof MeshStandardMaterial && mat.name === "PhoneCase_Mat") {
+          mat.color = new Color("#221e28");
+          mat.metalness = 0.4;
+          // roughness intentionally left at its original exported value —
+          // changing it was confirmed to crash mobile Safari on this model
+        }
       }
-    }
-  });
-}, [scene]);
+    });
+  }, [scene]);
 
   return <primitive object={scene} scale={1.4} position={[0, -0.2, 0]} />;
 }
@@ -41,4 +43,4 @@ export default function MobilePhoneScene() {
       </Canvas>
     </div>
   );
-}
+}   
