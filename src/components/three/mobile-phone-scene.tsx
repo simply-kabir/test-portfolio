@@ -27,7 +27,7 @@ function PhoneModel() {
     });
   }, [scene]);
 
-  return <primitive object={scene} scale={2.6} position={[0, -0.2, 0]} />;
+  return <primitive object={scene} scale={2.6} position={[0, 0, 0]} rotation={[Math.PI / 2, 0, 0]}/>;
 }
 
 export default function MobilePhoneScene() {
