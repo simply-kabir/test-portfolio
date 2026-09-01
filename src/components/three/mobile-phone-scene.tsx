@@ -1,46 +1,21 @@
 "use client";
 
-import { useEffect } from "react";
 import { Canvas } from "@react-three/fiber";
-import { useGLTF } from "@react-three/drei";
 import { Suspense } from "react";
-import { MeshStandardMaterial, Color, type Mesh } from "three";
-
-function PhoneModel() {
-  const { scene } = useGLTF("/models/phone-test.glb");
-
-  useEffect(() => {
-    scene.traverse((child) => {
-      const mesh = child as Mesh;
-      if (!mesh.isMesh || !mesh.material) return;
-
-      const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-
-      for (const mat of materials) {
-        if (mat instanceof MeshStandardMaterial && mat.name === "PhoneCase_Mat") {
-          mat.color = new Color("#3a3345");
-          mat.metalness = 0.4;
-          // roughness intentionally left at its original exported value —
-          // changing it was confirmed to crash mobile Safari on this model
-        }
-      }
-    });
-  }, [scene]);
-
-  return <primitive object={scene} scale={2.6} position={[0, 0, 0]} rotation={[Math.PI / 2, 0, 0]}/>;
-}
+import { MobilePhoneModel } from "./mobile-phone-model";
 
 export default function MobilePhoneScene() {
   return (
     <div style={{ width: "100%", height: "100%" }}>
-      <Canvas camera={{ position: [0, 0, 3], fov: 40 }}>
-        <ambientLight intensity={0.6} color="#F1EDE6" />
-        <directionalLight position={[2, 2, 2]} intensity={1.1} color="#F1EDE6" />
-        <directionalLight position={[-1.5, 0.5, -1]} intensity={0.3} color="#E8A33D" />
+      <Canvas camera={{ position: [0, 0, 5], fov: 45 }}>
+        <ambientLight intensity={1.4} color="#F1EDE6" />
+        <directionalLight position={[1.5, 1.5, 2.5]} intensity={2.2} color="#F1EDE6" />
+        <directionalLight position={[-1.5, 1, 1.5]} intensity={1.0} color="#E8A33D" />
+        <directionalLight position={[0, -1, 2]} intensity={0.5} color="#F1EDE6" />
         <Suspense fallback={null}>
-          <PhoneModel />
+          <MobilePhoneModel />
         </Suspense>
       </Canvas>
     </div>
   );
-}   
+}
