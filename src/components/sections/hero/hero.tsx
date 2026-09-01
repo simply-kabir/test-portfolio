@@ -35,18 +35,22 @@ export default function Hero() {
       <div className="sticky top-0 min-h-[100dvh] lg:h-screen w-full overflow-visible lg:overflow-hidden">
         {/* 3D Scene Background & Workstation Canvas */}
         <HeroBackground progress={progress} />
+
+        {/* Mobile 3D Phone Scene — Automatically Centered on Screen */}
         {!is3DCapable && (
-          <div className="absolute inset-x-0 top-1/3 z-10 h-[300px] w-full">
+          <div className="absolute inset-0 z-10 w-full h-full pointer-events-none flex items-center justify-center">
             <MobilePhoneScene />
           </div>
         )}
+
+        {/* Desktop 3D Scene */}
         {is3DCapable && (
           <div className="absolute inset-0 z-0 pointer-events-none lg:pointer-events-auto hidden lg:block">
             <SceneCanvas progress={progress} />
           </div>
         )}
 
-        {/* About Section Layer — Unconstrained Fluid Height on Mobile, Absolute Pinned Overlay on Desktop */}
+        {/* About Section Layer */}
         <div
           className="relative lg:absolute lg:inset-0 z-20 w-full h-auto lg:h-full overflow-visible lg:overflow-hidden transition-opacity duration-150 ease-out"
           style={{
@@ -57,7 +61,8 @@ export default function Hero() {
           <About progress={progress} />
         </div>
 
-        <ScreenOverlay progress={progress} />
+        {/* CRT Scanline Overlay — Only for Desktop 3D Monitor, Not on Phone Screen */}
+        {is3DCapable && <ScreenOverlay progress={progress} />}
       </div>
     </section>
   );

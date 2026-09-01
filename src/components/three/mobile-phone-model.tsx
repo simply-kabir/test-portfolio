@@ -10,9 +10,8 @@ import { RoundedBox } from '@react-three/drei';
  * Real-world proportions: 150.0 x 71.9 x 8.75mm body.
  *
  * Screen rendering:
- * Uses a dedicated PlaneGeometry with 1:1 planar UV mapping and a high-performance
- * Retina (768x1632) CanvasTexture. The Monogram "K" Logo and typography are
- * prominently sized and locked at the exact dead center of the display.
+ * Features a rounded-corner clipped transparent screen face with 1:1 planar mapping.
+ * The Monogram "K" Logo and typography are prominently sized and locked at the exact dead center.
  * The animation runs smoothly ONCE on initial load (~1.6s) then settles into a static texture.
  */
 
@@ -108,7 +107,28 @@ export function MobilePhoneModel() {
     const width = 768;
     const height = 1632;
 
-    // 1. Deep OLED pitch-black background
+    // 1. Clear to transparent and clip with exact rounded rectangle curve
+    ctx.clearRect(0, 0, width, height);
+    ctx.save();
+    ctx.beginPath();
+    if (typeof ctx.roundRect === 'function') {
+      ctx.roundRect(0, 0, width, height, 76);
+    } else {
+      const r = 76;
+      ctx.moveTo(r, 0);
+      ctx.lineTo(width - r, 0);
+      ctx.quadraticCurveTo(width, 0, width, r);
+      ctx.lineTo(width, height - r);
+      ctx.quadraticCurveTo(width, height, width - r, height);
+      ctx.lineTo(r, height);
+      ctx.quadraticCurveTo(0, height, 0, height - r);
+      ctx.lineTo(0, r);
+      ctx.quadraticCurveTo(0, 0, r, 0);
+      ctx.closePath();
+    }
+    ctx.clip();
+
+    // Deep OLED pitch-black background
     ctx.fillStyle = '#050508';
     ctx.fillRect(0, 0, width, height);
 
@@ -212,6 +232,7 @@ export function MobilePhoneModel() {
       ctx.fillText('AI ENGINEER • FULL STACK DEVELOPER', centerX, logoCenterY + 220);
     }
 
+    ctx.restore();
     screenTexture.needsUpdate = true;
   });
 
@@ -248,7 +269,7 @@ export function MobilePhoneModel() {
         <meshBasicMaterial color="#050508" />
       </RoundedBox>
 
-      {/* Screen Display Face — Flat PlaneGeometry with true 1:1 planar UV mapping */}
+      {/* Screen Display Face — Rounded transparent plane */}
       {screenTexture && (
         <mesh position={[0, 0, BODY_DEPTH / 2 + SCREEN_DEPTH + 0.001 * SCALE]}>
           <planeGeometry
@@ -257,7 +278,7 @@ export function MobilePhoneModel() {
               BODY_HEIGHT - SCREEN_INSET * 2,
             ]}
           />
-          <meshBasicMaterial map={screenTexture} toneMapped={false} />
+          <meshBasicMaterial map={screenTexture} transparent={true} toneMapped={false} />
         </mesh>
       )}
 
