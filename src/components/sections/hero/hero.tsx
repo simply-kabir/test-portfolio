@@ -31,14 +31,14 @@ export default function Hero() {
       {/* Anchor for nav's "About" link */}
       <div id="about" className="absolute left-0 w-full" style={{ top: "65vh" }} />
 
-      {/* Viewport-Pinned Container on Desktop, Fluid Auto-Expanding on Mobile */}
-      <div className="sticky top-0 min-h-[100dvh] lg:h-screen w-full overflow-visible lg:overflow-hidden">
+      {/* Viewport-Pinned Container: locked to 100dvh for exact screen centering */}
+      <div className="sticky top-0 h-[100dvh] w-full overflow-hidden">
         {/* 3D Scene Background & Workstation Canvas */}
         <HeroBackground progress={progress} />
 
-        {/* Mobile 3D Phone Scene — Automatically Centered on Screen */}
+        {/* Mobile 3D Phone Scene — Centered on Both Axes */}
         {!is3DCapable && (
-          <div className="absolute inset-0 z-10 w-full h-full pointer-events-none flex items-center justify-center">
+          <div className="absolute inset-0 z-10 w-full h-full pointer-events-none flex items-center justify-center overflow-hidden">
             <MobilePhoneScene />
           </div>
         )}
@@ -61,7 +61,7 @@ export default function Hero() {
           <About progress={progress} />
         </div>
 
-        {/* CRT Scanline Overlay — Only for Desktop 3D Monitor, Not on Phone Screen */}
+        {/* CRT Scanline Overlay — Only for Desktop 3D Monitor */}
         {is3DCapable && <ScreenOverlay progress={progress} />}
       </div>
     </section>

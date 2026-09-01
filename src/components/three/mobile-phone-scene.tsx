@@ -2,29 +2,38 @@
 
 import { Canvas, useThree } from "@react-three/fiber";
 import { Suspense } from "react";
+import { Center } from "@react-three/drei";
 import { MobilePhoneModel } from "./mobile-phone-model";
 
 function ResponsivePhone() {
   const { viewport } = useThree();
 
-  // Dynamically compute scale factor based on screen aspect ratio
-  // Fits comfortably inside viewport whether portrait, landscape, tall, or squarish screens
-  const isPortrait = viewport.aspect < 1;
-  const targetScale = isPortrait
-    ? Math.min(viewport.width / 2.3, viewport.height / 4.4)
-    : Math.min(viewport.height / 3.8, 1.1);
+  // Exact bounds-based responsive scaling:
+  // Unscaled phone dimensions: width = 1.438, height = 3.0
+  // Target: occupy max 45% of visible viewport height and max 55% of visible viewport width
+  const scale = Math.min(
+    (viewport.width * 0.55) / 1.438,
+    (viewport.height * 0.45) / 3.0
+  );
 
   return (
-    <group position={[0, 0, 0]} scale={targetScale}>
-      <MobilePhoneModel />
-    </group>
+    <Center exact top={false} bottom={false} left={false} right={false}>
+      <group scale={scale}>
+        <MobilePhoneModel />
+      </group>
+    </Center>
   );
 }
 
 export default function MobilePhoneScene() {
   return (
-    <div className="w-full h-full flex items-center justify-center">
-      <Canvas camera={{ position: [0, 0, 5], fov: 45 }}>
+    <div className="w-full h-full flex items-center justify-center overflow-hidden">
+      <Canvas
+        camera={{ position: [0, 0, 5], fov: 45 }}
+        dpr={[1, 2]}
+        className="w-full h-full"
+        style={{ width: "100%", height: "100%" }}
+      >
         <ambientLight intensity={1.4} color="#F1EDE6" />
         <directionalLight position={[1.5, 1.5, 2.5]} intensity={2.2} color="#F1EDE6" />
         <directionalLight position={[-1.5, 1, 1.5]} intensity={1.0} color="#E8A33D" />
