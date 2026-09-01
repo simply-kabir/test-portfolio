@@ -17,7 +17,7 @@ function ResponsivePhone() {
   );
 
   return (
-    <Center exact top={false} bottom={false} left={false} right={false}>
+    <Center>
       <group scale={scale}>
         <MobilePhoneModel />
       </group>
