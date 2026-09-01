@@ -10,11 +10,10 @@ import { RoundedBox } from '@react-three/drei';
  * Real-world proportions: 150.0 x 71.9 x 8.75mm body.
  *
  * Screen rendering:
- * Uses a dedicated PlaneGeometry with 1:1 planar UV mapping and a high-DPI
- * (1024x2176) CanvasTexture so the Monogram "K" Logo and typography are
- * razor-sharp, prominently sized, and positioned at the exact dead center.
- * The 3-stroke drawing animation runs ONCE on initial load (~1.6s),
- * then settles into a static texture with zero continuous per-frame overhead.
+ * Uses a dedicated PlaneGeometry with 1:1 planar UV mapping and a high-performance
+ * Retina (768x1632) CanvasTexture. The Monogram "K" Logo and typography are
+ * prominently sized and locked at the exact dead center of the display.
+ * The animation runs smoothly ONCE on initial load (~1.6s) then settles into a static texture.
  */
 
 // Easing: cubic-bezier(0.22, 1, 0.36, 1)
@@ -24,7 +23,7 @@ function cubicEase(t: number) {
   return 1 - p * p * p;
 }
 
-const SCALE = 0.02; // tune against your scene; this is a starting guess, not verified
+const SCALE = 0.02;
 
 // --- Real-world iPhone 17 Pro dimensions (mm), scaled ---
 const BODY_WIDTH = 71.9 * SCALE;
@@ -69,36 +68,17 @@ const RIGHT_BUTTONS: ButtonSpec[] = [
 
 export function MobilePhoneModel() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const grainCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const hasSettledRef = useRef(false);
 
-  // Initialize high-DPI (1024 x 2176) canvas texture with planar 1:1 mapping
-  const { screenTexture, canvas, grainCanvas } = useMemo(() => {
+  // Initialize high-performance (768 x 1632) canvas texture
+  const { screenTexture, canvas } = useMemo(() => {
     if (typeof document === 'undefined') {
-      return { screenTexture: null, canvas: null, grainCanvas: null };
+      return { screenTexture: null, canvas: null };
     }
 
     const c = document.createElement('canvas');
-    c.width = 1024;
-    c.height = 2176;
-
-    // 128x128 offscreen canvas for seamless high-res film grain
-    const gc = document.createElement('canvas');
-    gc.width = 128;
-    gc.height = 128;
-    const gctx = gc.getContext('2d');
-    if (gctx) {
-      const imgData = gctx.createImageData(128, 128);
-      const data = imgData.data;
-      for (let i = 0; i < data.length; i += 4) {
-        const val = Math.floor(Math.random() * 255);
-        data[i] = val;
-        data[i + 1] = val;
-        data[i + 2] = val;
-        data[i + 3] = Math.floor(Math.random() * 26 + 8);
-      }
-      gctx.putImageData(imgData, 0, 0);
-    }
+    c.width = 768;
+    c.height = 1632;
 
     const tex = new CanvasTexture(c);
     tex.generateMipmaps = true;
@@ -106,13 +86,12 @@ export function MobilePhoneModel() {
     tex.magFilter = LinearFilter;
     tex.anisotropy = 16;
 
-    return { screenTexture: tex, canvas: c, grainCanvas: gc };
+    return { screenTexture: tex, canvas: c };
   }, []);
 
   canvasRef.current = canvas;
-  grainCanvasRef.current = grainCanvas;
 
-  // Render loop: runs animation once on load, then settles permanently to static
+  // Optimized Render loop: runs animation once on load, then settles permanently
   useFrame(({ clock }) => {
     if (!canvasRef.current || !screenTexture) return;
     const time = clock.getElapsedTime();
@@ -126,20 +105,20 @@ export function MobilePhoneModel() {
     const ctx = canvasRef.current.getContext('2d');
     if (!ctx) return;
 
-    const width = 1024;
-    const height = 2176;
+    const width = 768;
+    const height = 1632;
 
     // 1. Deep OLED pitch-black background
     ctx.fillStyle = '#050508';
     ctx.fillRect(0, 0, width, height);
 
     // Dead center calculations for entire group (monogram + typography)
-    const centerX = width / 2; // 512
-    const screenCenterY = height / 2; // 1088
-    const logoCenterY = screenCenterY - 90; // 998 (centers the whole composition at 1088)
+    const centerX = width / 2; // 384
+    const screenCenterY = height / 2; // 816
+    const logoCenterY = screenCenterY - 60; // 756 (centers the whole composition at 816)
 
     // 2. Soft radial illumination behind the logo
-    const pulseRad = 600;
+    const pulseRad = 380;
     const grad = ctx.createRadialGradient(centerX, logoCenterY, 0, centerX, logoCenterY, pulseRad);
     grad.addColorStop(0, 'rgba(245, 245, 245, 0.055)');
     grad.addColorStop(0.5, 'rgba(245, 245, 245, 0.012)');
@@ -147,19 +126,7 @@ export function MobilePhoneModel() {
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, width, height);
 
-    // 3. Faint high-res film grain
-    if (grainCanvasRef.current) {
-      const pattern = ctx.createPattern(grainCanvasRef.current, 'repeat');
-      if (pattern) {
-        ctx.save();
-        ctx.globalAlpha = 0.015;
-        ctx.fillStyle = pattern;
-        ctx.fillRect(0, 0, width, height);
-        ctx.restore();
-      }
-    }
-
-    // 4. ANIMATION SEQUENCE FOR MONOGRAM "K" LOGO (3-Stroke Construction)
+    // 3. ANIMATION SEQUENCE FOR MONOGRAM "K" LOGO (3-Stroke Construction)
     const t1 = cubicEase(Math.min(Math.max(time / 0.45, 0), 1));
     const t2 = cubicEase(Math.min(Math.max((time - 0.35) / 0.45, 0), 1));
     const t3 = cubicEase(Math.min(Math.max((time - 0.70) / 0.50, 0), 1));
@@ -168,15 +135,15 @@ export function MobilePhoneModel() {
     const pulseFactor = 1 + Math.sin(pulseProgress * Math.PI) * 0.08;
 
     ctx.strokeStyle = `rgba(245, 245, 245, ${(0.95 * pulseFactor).toFixed(3)})`;
-    ctx.lineWidth = 20; // bold, clear, thick strokes
+    ctx.lineWidth = 11; // bold, crisp strokes
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
 
-    // Prominent Monogram dimensions (Length = 400px, Width = ~320px)
-    const stemX = centerX - 105; // 407
-    const stemStartY = logoCenterY + 200; // 1198
-    const stemEndY = logoCenterY - 200; // 798
-    const stemLength = stemStartY - stemEndY; // 400
+    // Prominent Monogram bounds (Length = 230px, Width = ~180px)
+    const stemX = centerX - 65; // 319
+    const stemStartY = logoCenterY + 115; // 871
+    const stemEndY = logoCenterY - 115; // 641
+    const stemLength = stemStartY - stemEndY; // 230
 
     // Stroke 1: Vertical Stem (Draws upward)
     if (t1 > 0) {
@@ -188,9 +155,9 @@ export function MobilePhoneModel() {
     }
 
     // Stroke 2: Upper Diagonal Stroke
-    const upperJoinY = logoCenterY - 15;
-    const upperEndX = centerX + 95;
-    const upperEndY = logoCenterY - 200;
+    const upperJoinY = logoCenterY - 8;
+    const upperEndX = centerX + 60;
+    const upperEndY = logoCenterY - 115;
 
     if (t2 > 0) {
       const currUpperX = stemX + (upperEndX - stemX) * t2;
@@ -202,16 +169,16 @@ export function MobilePhoneModel() {
     }
 
     // Stroke 3: Smooth Lower Curved Stroke
-    const lowerJoinY = logoCenterY - 25;
+    const lowerJoinY = logoCenterY - 12;
     const p0 = { x: stemX, y: lowerJoinY };
-    const p1 = { x: stemX + 60, y: logoCenterY + 45 };
-    const p2 = { x: stemX + 130, y: logoCenterY + 105 };
-    const p3 = { x: centerX + 100, y: logoCenterY + 200 };
+    const p1 = { x: stemX + 38, y: logoCenterY + 25 };
+    const p2 = { x: stemX + 75, y: logoCenterY + 60 };
+    const p3 = { x: centerX + 65, y: logoCenterY + 115 };
 
     if (t3 > 0) {
       ctx.beginPath();
       ctx.moveTo(p0.x, p0.y);
-      const steps = 40;
+      const steps = 30;
       const maxStep = Math.floor(steps * t3);
       for (let i = 1; i <= maxStep; i++) {
         const u = i / steps;
@@ -223,26 +190,26 @@ export function MobilePhoneModel() {
       ctx.stroke();
     }
 
-    // 5. Crisp, high-definition Typography below logo
+    // 4. Crisp Typography below logo
     const textAlpha = Math.min(Math.max((time - 1.0) / 0.5, 0), 1);
     if (textAlpha > 0) {
       ctx.textAlign = 'center';
 
       // Name: KABIR
       ctx.fillStyle = `rgba(245, 245, 245, ${(0.95 * textAlpha).toFixed(3)})`;
-      ctx.font = '400 62px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", "Geist", sans-serif';
+      ctx.font = '400 36px -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif';
       if ('letterSpacing' in ctx) {
-        (ctx as any).letterSpacing = '18px';
+        (ctx as any).letterSpacing = '12px';
       }
-      ctx.fillText('KABIR', centerX, logoCenterY + 300);
+      ctx.fillText('KABIR', centerX, logoCenterY + 175);
 
       // Subtitle
       ctx.fillStyle = `rgba(245, 245, 245, ${(0.48 * textAlpha).toFixed(3)})`;
-      ctx.font = '500 24px -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Geist", sans-serif';
+      ctx.font = '500 15px -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif';
       if ('letterSpacing' in ctx) {
-        (ctx as any).letterSpacing = '5px';
+        (ctx as any).letterSpacing = '3.5px';
       }
-      ctx.fillText('AI ENGINEER • FULL STACK DEVELOPER', centerX, logoCenterY + 365);
+      ctx.fillText('AI ENGINEER • FULL STACK DEVELOPER', centerX, logoCenterY + 220);
     }
 
     screenTexture.needsUpdate = true;
@@ -271,7 +238,7 @@ export function MobilePhoneModel() {
         <meshStandardMaterial color="#4b4b4e" metalness={0.85} roughness={0.35} />
       </RoundedBox>
 
-      {/* Screen Base — dark backplate with matching rounded corner bezel */}
+      {/* Screen Base — OLED dark backplate */}
       <RoundedBox
         args={[BODY_WIDTH - SCREEN_INSET * 2, BODY_HEIGHT - SCREEN_INSET * 2, SCREEN_DEPTH]}
         radius={CORNER_RADIUS - SCREEN_INSET}
